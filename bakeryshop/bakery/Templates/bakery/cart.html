@@ -1,0 +1,16 @@
+{% extends 'bakery/base.html' %}
+{% block title %}Корзина{% endblock %}
+{% block content %}
+<h2>Ваша корзина</h2>
+{% if items %}
+    <ul>
+        {% for item in items %}
+            <li>{{ item.product.name }} × {{ item.quantity }} = {{ item.get_total_price }}₽</li>
+        {% endfor %}
+    </ul>
+    <p><strong>Итого: {{ total }}₽</strong></p>
+    <a href="{% url 'checkout' %}">Оформить заказ</a>
+{% else %}
+    <p>Корзина пуста.</p>
+{% endif %}
+{% endblock %}

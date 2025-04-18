@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}BakeryShop{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <h1><a href="{% url 'index' %}">🍞 BakeryShop</a></h1>
+        <nav>
+            <a href="{% url 'product_list' %}">Товары</a> |
+            <a href="{% url 'cart' %}">Корзина</a> |
+            <a href="{% url 'order_history' %}">Мои заказы</a>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; {{ now|date:"Y" }} BakeryShop</p>
+    </footer>
+</body>
+</html>

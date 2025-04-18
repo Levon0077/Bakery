@@ -1,0 +1,14 @@
+{% extends 'bakery/base.html' %}
+{% block title %}Товары{% endblock %}
+{% block content %}
+<h2>Наши товары</h2>
+<ul>
+    {% for product in products %}
+        <li>
+            <a href="{% url 'product_detail' product.id %}">
+                {{ product.name }} — {{ product.price }}₽
+            </a>
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}
