@@ -4,7 +4,6 @@ from .models import Order, OrderItem, Product
 from django.contrib import messages
 
 
-# Главная страница — список товаров
 def index(request):
     return render(request, 'bakery/index.html')
 
@@ -13,13 +12,11 @@ def product_list(request):
     return render(request, 'bakery/product_list.html', {'products': products})
 
 
-# Детали товара
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
     return render(request, 'bakery/product_detail.html', {'product': product})
 
 
-# Добавление товара в корзину
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
@@ -39,7 +36,6 @@ def add_to_cart(request, product_id):
     return redirect('product_detail', pk=product_id)
 
 
-# Просмотр корзины
 def cart_view(request):
     cart = request.session.get('cart', {})
     cart_items = []
@@ -58,26 +54,22 @@ def cart_view(request):
     return render(request, 'bakery/cart.html', {'cart_items': cart_items, 'total': total})
 
 
-# Очистка корзины
 def clear_cart(request):
     request.session['cart'] = {}
     return redirect('cart')
 
 @login_required
 def checkout_view(request):
-    # Проверяем, есть ли товары в корзине
     cart = request.session.get('cart', {})
     if not cart:
         messages.error(request, 'Ваша корзина пуста.')
-        return redirect('product_list')  # Переходим на страницу товаров
+        return redirect('product_list')
 
     if request.method == 'POST':
-        # Получаем данные из формы
         full_name = request.POST['full_name']
         address = request.POST['address']
         phone = request.POST['phone']
 
-        # Создаем заказ
         order = Order.objects.create(
             user=request.user,
             full_name=full_name,
@@ -86,7 +78,6 @@ def checkout_view(request):
             status='В процессе'
         )
 
-        # Добавляем товары в заказ
         total_price = 0
         for item_id, item in cart.items():
             product = Product.objects.get(id=item_id)
@@ -98,22 +89,17 @@ def checkout_view(request):
                 quantity=item['quantity']
             )
 
-        # Обновляем общую стоимость заказа
         order.total_price = total_price
         order.save()
 
-        # Очистка корзины после оформления
         request.session['cart'] = {}
 
         messages.success(request, f'Заказ #{order.id} успешно оформлен!')
 
-        # Переходим на страницу истории заказов или подтверждения
         return redirect('order_history')
 
     return render(request, 'bakery/checkout.html')
 
-
-# История заказов
 @login_required
 def order_history(request):
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
@@ -124,10 +110,8 @@ def order_history(request):
 def cancel_order(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
 
-    # Удаляем заказ
     order.delete()
 
-    # Сообщение и редирект
     from django.contrib import messages
     messages.success(request, f'Заказ #{order_id} успешно отменён.')
     return redirect('order_history')
