@@ -1,6 +1,7 @@
 {% extends 'bakery/base.html' %}
-{% block title %}Главная{% endblock %}
+{% block title %}Добро пожаловать{% endblock %}
 {% block content %}
-<h2>Добро пожаловать в нашу пекарню!</h2>
-<p>Свежая выпечка каждый день. Посмотрите наши <a href="{% url 'product_list' %}">товары</a>.</p>
+<h2>Добро пожаловать в Bakery Shop!</h2>
+<p>У нас вы найдёте свежую и вкусную выпечку на любой вкус!</p>
+<a href="{% url 'product_list' %}">Перейти к каталогу товаров</a>
 {% endblock %}

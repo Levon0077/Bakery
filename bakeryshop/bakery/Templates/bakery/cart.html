@@ -2,15 +2,21 @@
 {% block title %}Корзина{% endblock %}
 {% block content %}
 <h2>Ваша корзина</h2>
-{% if items %}
+
+{% if cart_items %}
     <ul>
-        {% for item in items %}
-            <li>{{ item.product.name }} × {{ item.quantity }} = {{ item.get_total_price }}₽</li>
+        {% for item in cart_items %}
+        <li>
+            {{ item.name }} — {{ item.quantity }} шт. × {{ item.price }}₽ = {{ item.subtotal }}₽
+        </li>
         {% endfor %}
     </ul>
-    <p><strong>Итого: {{ total }}₽</strong></p>
-    <a href="{% url 'checkout' %}">Оформить заказ</a>
+    <p><strong>Итого:</strong> {{ total }}₽</p>
+
+    <a href="{% url 'checkout' %}">Перейти к оформлению заказа</a><br>
+    <a href="{% url 'clear_cart' %}">Очистить корзину</a>
 {% else %}
     <p>Корзина пуста.</p>
 {% endif %}
+
 {% endblock %}

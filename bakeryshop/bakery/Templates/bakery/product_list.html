@@ -1,14 +1,14 @@
 {% extends 'bakery/base.html' %}
-{% block title %}Товары{% endblock %}
+{% block title %}Каталог товаров{% endblock %}
 {% block content %}
 <h2>Наши товары</h2>
 <ul>
     {% for product in products %}
-        <li>
-            <a href="{% url 'product_detail' product.id %}">
-                {{ product.name }} — {{ product.price }}₽
-            </a>
-        </li>
+    <li>
+        <a href="{% url 'product_detail' product.pk %}">{{ product.name }}</a> — {{ product.price }}֏
+    </li>
+    {% empty %}
+    <li>Нет товаров.</li>
     {% endfor %}
 </ul>
 {% endblock %}
