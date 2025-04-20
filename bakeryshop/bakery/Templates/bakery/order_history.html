@@ -19,7 +19,7 @@
                 <label for="status" class="form-label">Статус:</label>
                 <select name="status" class="form-select" id="status">
                     <option value="">Все</option>
-                    <option value="new" {% if request.GET.status == 'new' %}selected{% endif %}>Новый</option>
+                    <option value="new" {% if request.GET.status == "new" %}selected{% endif %}>Новый</option>
                     <option value="in_progress" {% if request.GET.status == 'in_progress' %}selected{% endif %}>В обработке</option>
                     <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Завершён</option>
                 </select>
@@ -60,7 +60,7 @@
                     <p><strong>Адрес:</strong> {{ order.address }}</p>
                     <p><strong>Телефон:</strong> {{ order.phone }}</p>
                     <p><strong>Оплачено:</strong> {{ order.paid|yesno:"Да,Нет" }}</p>
-                    <p><strong>Общая стоимость:</strong> <span class="fw-bold">{{ order.total_price }} ₽</span></p>
+                    <p><strong>Общая стоимость:</strong> <span class="fw-bold">{{ order.total_price }} ֏</span></p>
 
                     <h5 class="mt-3">Товары:</h5>
                     <ul class="list-group mb-3">

@@ -20,21 +20,21 @@ def product_detail(request, pk):
 
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+    quantity = int(request.POST.get('quantity', 1))
 
     cart = request.session.get('cart', {})
-    product_id_str = str(product_id)
 
-    if product_id_str in cart:
-        cart[product_id_str]['quantity'] += 1
+    if str(product_id) in cart:
+        cart[str(product_id)]['quantity'] += quantity
     else:
-        cart[product_id_str] = {
+        cart[str(product_id)] = {
             'name': product.name,
-            'price': str(product.price),
-            'quantity': 1
+            'price': float(product.price),
+            'quantity': quantity,
         }
 
     request.session['cart'] = cart
-    return redirect('product_detail', pk=product_id)
+    return redirect('cart')
 
 
 def cart_view(request):
