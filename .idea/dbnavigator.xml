@@ -1,14 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DBNavigator.Project.DDLFileAttachmentManager">
-    <mappings />
-    <preferences />
-  </component>
-  <component name="DBNavigator.Project.DataEditorManager">
-    <record-view-column-sorting-type value="BY_INDEX" />
-    <value-preview-text-wrapping value="true" />
-    <value-preview-pinned value="false" />
-  </component>
   <component name="DBNavigator.Project.DatabaseBrowserManager">
     <autoscroll-to-editor value="false" />
     <autoscroll-from-editor value="true" />
@@ -16,22 +7,12 @@
     <loaded-nodes />
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
-    <connection id="22f25b22-649f-470e-a764-c7159c68ccd2">
+    <connection id="8b474a20-bba1-4b2d-a3f0-65373ab79e50">
       <console name="Connection" type="STANDARD" schema="" session="Main" />
     </connection>
   </component>
-  <component name="DBNavigator.Project.DatabaseEditorStateManager">
-    <last-used-providers />
-  </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
     <open-files />
-  </component>
-  <component name="DBNavigator.Project.DatabaseSessionManager">
-    <connection id="22f25b22-649f-470e-a764-c7159c68ccd2" />
-  </component>
-  <component name="DBNavigator.Project.DatasetFilterManager">
-    <filter-actions connection-id="22f25b22-649f-470e-a764-c7159c68ccd2" dataset="main.django_migrations" active-filter-id="EMPTY_FILTER" />
-    <filter-actions connection-id="22f25b22-649f-470e-a764-c7159c68ccd2" dataset="main.django_admin_log" active-filter-id="EMPTY_FILTER" />
   </component>
   <component name="DBNavigator.Project.ObjectQuickFilterManager">
     <last-used-operator value="EQUAL" />
@@ -39,7 +20,7 @@
   </component>
   <component name="DBNavigator.Project.Settings">
     <connections>
-      <connection id="22f25b22-649f-470e-a764-c7159c68ccd2" active="true" signed="true">
+      <connection id="8b474a20-bba1-4b2d-a3f0-65373ab79e50" active="true" signed="true">
         <database>
           <name value="Connection" />
           <description value="" />
@@ -56,7 +37,7 @@
           <tns-folder value="" />
           <tns-profile value="" />
           <files>
-            <file path="C:\Users\User\Desktop\Bakeryshop\bakeryshop\db.sqlite3" schema="main" />
+            <file path="C:\Users\User\Desktop\Bakery\bakeryshop\db.sqlite3" schema="main" />
           </files>
           <type value="NONE" />
           <user value="" />
