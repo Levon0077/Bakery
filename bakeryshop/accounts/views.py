@@ -1,139 +1,191 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.contrib import messages
-from .forms import RegistrationForm, LoginForm, DeleteAccountForm, ConfirmPasswordForm, AvatarForm, ProfileEditForm
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.models import User
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
+from django.http import HttpResponse
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
-from .models import Profile, LoginHistory
-def send_confirmation_email(request, user):
-    uid = urlsafe_base64_encode(str(user.pk).encode())
-    token = default_token_generator.make_token(user)
-    confirmation_url = request.build_absolute_uri(f'/accounts/confirm/{uid}/{token}/')
+from django.contrib.auth.forms import PasswordChangeForm
+import logging
 
-    subject = "Подтверждение регистрации"
-    message = render_to_string(
-        'accounts/activation_email.html',
-        {'confirmation_url': confirmation_url}
-    )
+from .forms import (
+    RegistrationForm, LoginForm, DeleteAccountForm, ConfirmPasswordForm,
+    AvatarForm, ProfileEditForm, EmailForm, ChangePasswordForm
+)
+from .models import Profile
 
-    send_mail(subject, message, 'from@example.com', [user.email], fail_silently=False)
+# Логирование
+logger = logging.getLogger(__name__)
 
+# Регистрация
 def register(request):
-    if request.user.is_authenticated:
-        return redirect('index')
-
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            send_confirmation_email(request, user)
-            messages.success(request, "Вы успешно зарегистрированы! Проверьте ваш email для активации аккаунта.")
-            return redirect('index')
+            profile, created = Profile.objects.get_or_create(user=user)  # создаём профиль, если его нет
+            login(request, user)
+            messages.success(request, "Регистрация прошла успешно!")
+            return redirect('index')  # редирект на главную страницу
     else:
         form = RegistrationForm()
-
     return render(request, 'accounts/register.html', {'form': form})
 
+# Вход
 def login_view(request):
-    if request.user.is_authenticated:
-        return redirect('index')
-
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
-            user = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password'])
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                ip_address = request.META.get('REMOTE_ADDR')
-                device = request.META.get('HTTP_USER_AGENT', '')
-                LoginHistory.objects.create(user=user, ip_address=ip_address, device=device)
-                messages.success(request, "Вы успешно вошли в систему!")
                 return redirect('index')
             else:
-                messages.error(request, "Неверное имя пользователя или пароль.")
+                messages.error(request, 'Неверный логин или пароль')
     else:
         form = LoginForm()
-
     return render(request, 'accounts/login.html', {'form': form})
 
+# Выход
 def logout_view(request):
     logout(request)
-    return redirect('index')
+    return redirect('login')
 
+# Изменение пароля
+def change_password(request):
+    # Первая форма: изменение пароля
+    if request.method == 'POST' and 'new_password' in request.POST:
+        password_form = ChangePasswordForm(request.user, request.POST)
+
+        if password_form.is_valid():
+            # Сохраняем новый пароль
+            password_form.save()
+
+            # Перенаправляем на страницу подтверждения старого пароля
+            return redirect('confirm_old_password')
+
+    else:
+        password_form = ChangePasswordForm(request.user)
+
+    return render(request, 'accounts/change_password.html', {'password_form': password_form})
+
+def confirm_old_password(request):
+    # Вторая форма: подтверждение старого пароля
+    if request.method == 'POST':
+        confirm_form = ConfirmPasswordForm(request.POST)
+
+        if confirm_form.is_valid():
+            current_password = confirm_form.cleaned_data['password']
+
+            if request.user.check_password(current_password):
+                # Если старый пароль правильный, обновляем сессию
+                messages.success(request, "Пароль успешно изменён!")
+                return redirect('password_change_done')
+            else:
+                messages.error(request, "Неверный старый пароль.")
+
+    else:
+        confirm_form = ConfirmPasswordForm()
+
+    return render(request, 'accounts/confirm_old_password.html', {'confirm_form': confirm_form})
+
+def password_change_done(request):
+    return render(request, 'accounts/password_change_done.html')
+
+
+# Удаление аккаунта
 def delete_account(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
     if request.method == 'POST':
-        form = DeleteAccountForm(request.POST)
-        password_form = ConfirmPasswordForm(request.POST)
-        if form.is_valid() and password_form.is_valid():
-            password = password_form.cleaned_data['password']
+        form = ConfirmPasswordForm(request.POST)
+        if form.is_valid():
+            password = form.cleaned_data['password']
             user = authenticate(username=request.user.username, password=password)
+
             if user is not None:
-                if form.cleaned_data['confirm']:
-                    user.delete()
-                    logout(request)
-                    messages.success(request, "Ваш аккаунт был удален.")
-                    return redirect('index')
+                # Если пароль правильный, удалить аккаунт
+                request.user.delete()
+                messages.success(request, "Ваш аккаунт был успешно удалён.")
+                return redirect('index')  # редирект на главную страницу
             else:
-                messages.error(request, "Неверный пароль!")
+                messages.error(request, 'Неверный пароль. Попробуйте снова.')
     else:
-        form = DeleteAccountForm()
-        password_form = ConfirmPasswordForm()
+        form = ConfirmPasswordForm()
 
-    return render(request, 'accounts/delete_account.html', {'form': form, 'password_form': password_form})
+    return render(request, 'accounts/delete_account.html', {'form': form})
 
+# Подтверждение регистрации
 def confirm_registration(request, uidb64, token):
     try:
         uid = urlsafe_base64_decode(uidb64).decode()
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = get_user_model().objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, get_user_model().DoesNotExist):
         user = None
-
     if user is not None and default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
-        messages.success(request, 'Ваш аккаунт активирован! Теперь вы можете войти.')
+        messages.success(request, 'Ваш аккаунт подтверждён! Вы можете войти.')
         return redirect('login')
     else:
-        messages.error(request, 'Неверная ссылка для активации.')
+        messages.error(request, 'Ссылка для подтверждения устарела или неверна.')
         return redirect('register')
 
-
+# Редактирование профиля
 def edit_profile(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    user_profile = Profile.objects.get(user=request.user)
+    profile, _ = Profile.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
-        form = ProfileEditForm(request.POST, instance=user_profile)
+        form = ProfileEditForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
-            messages.success(request, "Ваш профиль был успешно обновлен!")
-            return redirect('profile')
+            messages.success(request, 'Профиль успешно обновлён.')
+            return redirect('edit_profile')
     else:
-        form = ProfileEditForm(instance=user_profile)
-
+        form = ProfileEditForm(instance=profile)
     return render(request, 'accounts/edit_profile.html', {'form': form})
 
+# Изменение аватара
 def change_avatar(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    user_profile = Profile.objects.get(user=request.user)
+    profile, _ = Profile.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
-        form = AvatarForm(request.POST, request.FILES, instance=user_profile)
+        form = AvatarForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
-            messages.success(request, "Аватар был обновлен!")
-            return redirect('profile')
+            messages.success(request, 'Аватар успешно обновлён.')
+            return redirect('edit_profile')
     else:
-        form = AvatarForm(instance=user_profile)
-
+        form = AvatarForm(instance=profile)
     return render(request, 'accounts/change_avatar.html', {'form': form})
+
+# Отправка тестового письма
+def send_test_email(request):
+    if request.method == 'POST':
+        form = EmailForm(request.POST)
+        if form.is_valid():
+            subject = 'Тестовое письмо от Django'
+            message = 'Это тестовое письмо, отправленное из Django!'
+            from_email = 'your_email@gmail.com'  # замените на свой email
+            recipient_email = form.cleaned_data['email']
+            try:
+                send_mail(subject, message, from_email, [recipient_email])
+                return HttpResponse(f'Тестовое письмо успешно отправлено на {recipient_email}')
+            except Exception as e:
+                logger.error(f"Ошибка при отправке письма: {str(e)}")
+                messages.error(request, f'Ошибка при отправке письма: {str(e)}')
+                return redirect('send_test_email')
+    else:
+        form = EmailForm()
+    return render(request, 'accounts/send-test-email.html', {'form': form})

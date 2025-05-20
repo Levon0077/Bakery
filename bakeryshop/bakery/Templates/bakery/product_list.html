@@ -1,18 +1,32 @@
 {% extends 'bakery/base.html' %}
+{% load static %}
 
 {% block title %}Каталог товаров{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/product-card.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
     <h2 class="mb-4">Наши товары</h2>
-
     {% if products %}
-        <div class="list-group">
+        <div class="row row-cols-2 row-cols-md-4 g-4">
             {% for product in products %}
-                <a href="{% url 'product_detail' product.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                    {{ product.name }}
-                    <span class="badge bg-secondary">{{ product.price }}֏</span>
-                </a>
+                <div class="col">
+                    <a href="{% url 'product_detail' product.pk %}" class="text-decoration-none text-dark">
+                        <div class="card product-card h-100 text-center border-0 shadow-sm">
+                            <div class="product-image-wrapper mx-auto mt-3">
+                                <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
+                            </div>
+                            <div class="card-body p-2">
+                                <h6 class="card-title mb-1">{{ product.name }}</h6>
+                                <p class="text-muted mb-0">{{ product.price }}֏</p>
+                                <button class="btn btn-outline-primary custom-add-btn mt-2">Add to cart</button>
+                            </div>
+                        </div>
+                    </a>
+                </div>
             {% endfor %}
         </div>
     {% else %}
@@ -20,4 +34,3 @@
     {% endif %}
 </div>
 {% endblock %}
-
