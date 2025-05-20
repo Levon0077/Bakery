@@ -1,0 +1,24 @@
+{% extends 'bakery/base.html' %}
+
+{% block title %}Изменить аватар{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Изменить аватар</h2>
+
+    <form method="POST" enctype="multipart/form-data" class="card p-4 shadow-sm">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a href="{% url 'edit_profile' %}" class="btn btn-secondary ms-2">Отмена</a>
+    </form>
+
+    {% if user.profile.avatar %}
+        <div class="mt-4">
+            <h5>Текущий аватар:</h5>
+            <img src="{{ user.profile.avatar.url }}" class="img-thumbnail" style="max-width: 200px;" alt="Аватар">
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
