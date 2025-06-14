@@ -1,0 +1,32 @@
+{% extends 'bakery/base.html' %}
+
+{% block title %}Главная Страница{% endblock %}
+
+{% block content %}
+<section class="hero bg-primary text-white text-center py-5">
+    <div class="container">
+        <h1 class="display-4 mb-3">Добро пожаловать в Bakery Shop!</h1>
+        <p class="lead mb-4">Вкуснейшая выпечка, свежие продукты, и всё это с доставкой прямо к вам!</p>
+        <a href="{% url 'product_list' %}" class="btn btn-light btn-lg">Перейти в каталог</a>
+    </div>
+</section>
+
+<section class="featured-products py-5">
+    <div class="container">
+        <div class="row">
+            {% for product in products %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text">{{ product.description|truncatewords:20 }}</p>
+                        <a href="{% url 'product_detail' product.id %}" class="btn btn-primary">Подробнее</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'bakery/base.html' %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">{{ product.name }}</h2>
+
+    {% if product.image %}
+        <div class="mb-4">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid" style="max-width: 300px;">
+        </div>
+    {% endif %}
+
+    <p>{{ product.description }}</p>
+    <p><strong>Цена:</strong> {{ product.price }}֏</p>
+
+    <form method="post" action="{% url 'add_to_cart' product.id %}" class="mb-4">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="quantity" class="form-label">Количество:</label>
+            <input type="number" name="quantity" value="1" min="1" id="quantity" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Добавить в корзину</button>
+    </form>
+
+    <a href="{% url 'product_list' %}" class="btn btn-link">← Назад ко всем товарам</a>
+</div>
+{% endblock %}
+
+

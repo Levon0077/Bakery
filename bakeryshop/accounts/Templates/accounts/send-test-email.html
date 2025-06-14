@@ -1,0 +1,18 @@
+{% extends 'bakery/base.html' %}
+
+{% block title %}Отправка тестового письма{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Отправка тестового письма</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            {{ form.email.label_tag }}
+            {{ form.email }}
+            <div class="form-text text-danger">{{ form.email.errors }}</div>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Отправить письмо</button>
+    </form>
+</div>
+{% endblock %}

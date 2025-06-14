@@ -1,0 +1,10 @@
+{% extends 'bakery/base.html' %}
+{% block title %}Спасибо за заказ{% endblock %}
+{% block content %}
+<div style="text-align: center; margin-top: 50px;">
+    <div style="font-size: 80px; color: green;">✔️</div>
+    <h2>Спасибо за ваш заказ!</h2>
+    <p>Мы уже обрабатываем его и скоро с вами свяжемся.</p>
+    <a href="{% url 'product_list' %}" class="btn">На главную</a>
+</div>
+{% endblock %}

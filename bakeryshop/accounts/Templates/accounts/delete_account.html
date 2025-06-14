@@ -1,0 +1,42 @@
+{% extends 'bakery/base.html' %}
+
+{% block title %}Удаление аккаунта{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Удаление аккаунта</h2>
+    <p class="text-center">Вы уверены, что хотите удалить свой аккаунт? Это действие необратимо.</p>
+
+    <!-- Кнопка для открытия модального окна -->
+    <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+        Удалить аккаунт
+    </button>
+
+    <!-- Модальное окно для подтверждения удаления -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Подтвердите удаление</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Для подтверждения удаления аккаунта введите свой пароль.</p>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ form.password.label_tag }}
+                            {{ form.password }}
+                            <div class="form-text text-danger">{{ form.password.errors }}</div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-danger">Удалить аккаунт</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'bakery/base.html' %}
+
+{% block title %}Редактирование профиля{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Редактирование профиля</h2>
+
+    <div class="text-center mb-4">
+        {% if request.user.profile.avatar %}
+            <img src="{{ request.user.profile.avatar.url }}" alt="Аватар" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
+        {% else %}
+            <img src="https://via.placeholder.com/120" alt="Нет аватара" class="rounded-circle">
+        {% endif %}
+        <p class="mt-2">
+            <a href="{% url 'change_avatar' %}" class="btn btn-outline-secondary btn-sm">Изменить аватар</a>
+        </p>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            {{ form.bio.label_tag }}
+            {{ form.bio }}
+            <div class="form-text text-danger">{{ form.bio.errors }}</div>
+        </div>
+        <div class="mb-3">
+            {{ form.birth_date.label_tag }}
+            {{ form.birth_date }}
+            <div class="form-text text-danger">{{ form.birth_date.errors }}</div>
+        </div>
+        <button type="submit" class="btn btn-success w-100">Сохранить изменения</button>
+    </form>
+
+    <hr class="my-4">
+
+    <div class="text-center">
+        <a href="{% url 'cart' %}" class="btn btn-outline-primary mb-2 w-100">Перейти в корзину</a>
+        <a href="{% url 'order_history' %}" class="btn btn-outline-primary w-100">История заказов</a>
+    </div>
+</div>
+{% endblock %}
