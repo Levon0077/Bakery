@@ -1,39 +1,83 @@
+from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+
+from .forms import ReviewForm
 from .models import Product, Order, OrderItem, Category
+
 def index(request):
-    return render(request, 'bakery/index.html')
+    featured_categories = Category.objects.filter(is_featured=True)[:3]
+    popular_products = Product.objects.order_by('-purchase_count')[:8]
+    limited_products = Product.objects.filter(is_limited=True)[:5]
+    products = Product.objects.all()[:3]
+
+    return render(request, 'bakery/index.html', {
+        'products': products,
+        'featured_categories': featured_categories,
+        'popular_products': popular_products,
+        'limited_products': limited_products,
+    })
 
 def product_list(request):
-    category_slug = request.GET.get('category')
-    sort_option = request.GET.get('sort')
-
     products = Product.objects.all()
-    categories = Category.objects.all()
 
-    if category_slug:
-        products = products.filter(category__slug=category_slug)
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    if min_price:
+        products = products.filter(price__gte=min_price)
+    if max_price:
+        products = products.filter(price__lte=max_price)
 
-    if sort_option == 'name':
-        products = products.order_by('name')
-    elif sort_option == 'name_desc':
-        products = products.order_by('-name')
-    elif sort_option == 'price_asc':
+    search_query = request.GET.get('search')
+    if search_query:
+        products = products.filter(Q(name__icontains=search_query) | Q(description__icontains=search_query))
+
+    # Сортировка
+    sort = request.GET.get('sort')
+    if sort == 'price_asc':
         products = products.order_by('price')
-    elif sort_option == 'price_desc':
+    elif sort == 'price_desc':
         products = products.order_by('-price')
+    elif sort == 'popularity':
+        products = products.order_by('-popularity')
+    elif sort == 'rating':
+        products = sorted(products, key=lambda p: p.average_rating(), reverse=True)
+    elif sort == 'newest':
+        products = products.order_by('-created_at')
 
-    return render(request, 'bakery/product_list.html', {
+    context = {
         'products': products,
-        'categories': categories,
-        'selected_category': category_slug,
-        'sort_option': sort_option,
-    })
+        'sort': sort,
+        'min_price': min_price,
+        'max_price': max_price,
+        'search_query': search_query,
+    }
+    return render(request, 'bakery/product_list.html', context)
+
 
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
-    return render(request, 'bakery/product_detail.html', {'product': product})
+    reviews = product.reviews.all().order_by('-created_at')
+
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            return redirect('login')
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.product = product
+            review.save()
+            return redirect('product_detail', pk=pk)
+    else:
+        form = ReviewForm()
+
+    return render(request, 'product_detail.html', {
+        'product': product,
+        'reviews': reviews,
+        'form': form,
+    })
 
 
 def add_to_cart(request, product_id):

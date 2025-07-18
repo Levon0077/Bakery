@@ -9,50 +9,54 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Наши товары</h2>
-    {% if products %}
-        <div class="row row-cols-2 row-cols-md-4 g-4">
-            {% for product in products %}
-                <div class="col">
-                    <a href="{% url 'product_detail' product.pk %}" class="text-decoration-none text-dark">
-                        <div class="card product-card h-100 text-center border-0 shadow-sm">
-                            <div class="product-image-wrapper mx-auto mt-3">
-                                <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
-                            </div>
-                            <div class="card-body p-2">
-                                <h6 class="card-title mb-1">{{ product.name }}</h6>
-                                <p class="text-muted mb-0">{{ product.price }}֏</p>
-                                <button class="btn btn-outline-primary custom-add-btn mt-2">Добавить в корзину</button>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            {% endfor %}
+  <h2 class="mb-4">Наши товары</h2>
+
+  <form method="get" class="row mb-4">
+    <div class="col-md-6">
+      <label for="category" class="form-label">Категория:</label>
+      <select name="category" id="category" class="form-select" onchange="this.form.submit()">
+        <option value="">Все категории</option>
+        {% for cat in categories %}
+          <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label for="sort" class="form-label">Сортировка:</label>
+      <select name="sort" id="sort" class="form-select" onchange="this.form.submit()">
+        <option value="name" {% if sort_option == "name" %}selected{% endif %}>По названию (А–Я)</option>
+        <option value="name_desc" {% if sort_option == "name_desc" %}selected{% endif %}>По названию (Я–А)</option>
+        <option value="price_asc" {% if sort_option == "price_asc" %}selected{% endif %}>По цене ↑</option>
+        <option value="price_desc" {% if sort_option == "price_desc" %}selected{% endif %}>По цене ↓</option>
+      </select>
+    </div>
+  </form>
+
+  {% if products %}
+    <div class="row row-cols-2 row-cols-md-4 g-4">
+      {% for product in products %}
+        <div class="col">
+          <div class="card product-card h-100 text-center border-0 shadow-sm">
+            <a href="{% url 'product_detail' product.pk %}" class="text-decoration-none text-dark">
+              <div class="product-image-wrapper mx-auto mt-3">
+                <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
+              </div>
+              <div class="card-body p-2">
+                <h6 class="card-title mb-1">{{ product.name }}</h6>
+                <p class="text-muted mb-0">{{ product.price }}֏</p>
+              </div>
+            </a>
+            <form method="post" action="{% url 'add_to_cart' product.id %}" class="mb-3">
+              {% csrf_token %}
+              <input type="hidden" name="quantity" value="1" />
+              <button type="submit" class="btn btn-outline-primary custom-add-btn">Добавить в корзину</button>
+            </form>
+          </div>
         </div>
-    {% else %}
-        <p>Нет товаров.</p>
-    {% endif %}
-</div>
-
-<form method="get" class="row mb-4">
-  <div class="col-md-6">
-    <label for="category" class="form-label">Категория:</label>
-    <select name="category" id="category" class="form-select" onchange="this.form.submit()">
-      <option value="">Все категории</option>
-      {% for cat in categories %}
-        <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
       {% endfor %}
-    </select>
-  </div>
-  <div class="col-md-6">
-    <label for="sort" class="form-label">Сортировка:</label>
-    <select name="sort" id="sort" class="form-select" onchange="this.form.submit()">
-      <option value="name" {% if sort_option == "name" %}selected{% endif %}>По названию (А–Я)</option>
-      <option value="name_desc" {% if sort_option == "name_desc" %}selected{% endif %}>По названию (Я–А)</option>
-      <option value="price_asc" {% if sort_option == "price_asc" %}selected{% endif %}>По цене ↑</option>
-      <option value="price_desc" {% if sort_option == "price_desc" %}selected{% endif %}>По цене ↓</option>
-    </select>
-  </div>
-</form>
-
+    </div>
+  {% else %}
+    <p>Нет товаров.</p>
+  {% endif %}
+</div>
 {% endblock %}
