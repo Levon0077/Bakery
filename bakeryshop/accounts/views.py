@@ -16,10 +16,8 @@ from .forms import (
 )
 from .models import Profile
 
-# Логирование
 logger = logging.getLogger(__name__)
 
-# Регистрация
 def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
@@ -50,22 +48,16 @@ def login_view(request):
         form = LoginForm()
     return render(request, 'accounts/login.html', {'form': form})
 
-# Выход
 def logout_view(request):
     logout(request)
     return redirect('login')
 
-# Изменение пароля
 def change_password(request):
-    # Первая форма: изменение пароля
     if request.method == 'POST' and 'new_password' in request.POST:
         password_form = ChangePasswordForm(request.user, request.POST)
 
         if password_form.is_valid():
-            # Сохраняем новый пароль
             password_form.save()
-
-            # Перенаправляем на страницу подтверждения старого пароля
             return redirect('confirm_old_password')
 
     else:
@@ -74,7 +66,6 @@ def change_password(request):
     return render(request, 'accounts/change_password.html', {'password_form': password_form})
 
 def confirm_old_password(request):
-    # Вторая форма: подтверждение старого пароля
     if request.method == 'POST':
         confirm_form = ConfirmPasswordForm(request.POST)
 
@@ -82,7 +73,6 @@ def confirm_old_password(request):
             current_password = confirm_form.cleaned_data['password']
 
             if request.user.check_password(current_password):
-                # Если старый пароль правильный, обновляем сессию
                 messages.success(request, "Пароль успешно изменён!")
                 return redirect('password_change_done')
             else:
@@ -97,7 +87,6 @@ def password_change_done(request):
     return render(request, 'accounts/password_change_done.html')
 
 
-# Удаление аккаунта
 def delete_account(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -109,10 +98,9 @@ def delete_account(request):
             user = authenticate(username=request.user.username, password=password)
 
             if user is not None:
-                # Если пароль правильный, удалить аккаунт
                 request.user.delete()
                 messages.success(request, "Ваш аккаунт был успешно удалён.")
-                return redirect('index')  # редирект на главную страницу
+                return redirect('index')
             else:
                 messages.error(request, 'Неверный пароль. Попробуйте снова.')
     else:
@@ -120,7 +108,6 @@ def delete_account(request):
 
     return render(request, 'accounts/delete_account.html', {'form': form})
 
-# Подтверждение регистрации
 def confirm_registration(request, uidb64, token):
     try:
         uid = urlsafe_base64_decode(uidb64).decode()
@@ -136,7 +123,6 @@ def confirm_registration(request, uidb64, token):
         messages.error(request, 'Ссылка для подтверждения устарела или неверна.')
         return redirect('register')
 
-# Редактирование профиля
 def edit_profile(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -153,7 +139,6 @@ def edit_profile(request):
         form = ProfileEditForm(instance=profile)
     return render(request, 'accounts/edit_profile.html', {'form': form})
 
-# Изменение аватара
 def change_avatar(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -170,14 +155,13 @@ def change_avatar(request):
         form = AvatarForm(instance=profile)
     return render(request, 'accounts/change_avatar.html', {'form': form})
 
-# Отправка тестового письма
 def send_test_email(request):
     if request.method == 'POST':
         form = EmailForm(request.POST)
         if form.is_valid():
             subject = 'Тестовое письмо от Django'
             message = 'Это тестовое письмо, отправленное из Django!'
-            from_email = 'your_email@gmail.com'  # замените на свой email
+            from_email = 'your_email@gmail.com'
             recipient_email = form.cleaned_data['email']
             try:
                 send_mail(subject, message, from_email, [recipient_email])

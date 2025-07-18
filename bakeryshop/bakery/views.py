@@ -73,7 +73,7 @@ def product_detail(request, pk):
     else:
         form = ReviewForm()
 
-    return render(request, 'product_detail.html', {
+    return render(request, 'bakery/product_detail.html', {
         'product': product,
         'reviews': reviews,
         'form': form,
