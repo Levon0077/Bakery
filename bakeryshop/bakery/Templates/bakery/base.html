@@ -25,7 +25,6 @@
         <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#profileSidebar" aria-controls="profileSidebar">&#9776;</button>
       {% endif %}
     </div>
-    <!-- Навигация (пример) -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light mt-2">
       <div class="container-fluid">
         <ul class="navbar-nav">
@@ -62,7 +61,17 @@
 </div>
 
 <main class="container">
-  {% block content %}{% endblock %}
+    {% if messages %}
+    <div class="my-3" style="margin-top: 1rem;">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" data-bs-delay="4000" data-bs-autohide="true">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% block content %}{% endblock %}
 </main>
 
 <footer class="bg-light text-center py-3 mt-4">

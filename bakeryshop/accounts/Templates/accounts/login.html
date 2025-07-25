@@ -27,10 +27,11 @@
   <div class="container d-flex justify-content-center align-items-center min-vh-100">
     <div class="card p-4" style="max-width: 420px; width: 100%;">
       <h2 class="text-center mb-4" style="color: #6f4e37;">Вход в аккаунт</h2>
-      <form action="/login" method="POST">
+      <form action="{% url 'login' %}" method="POST">
+        {% csrf_token %}
         <div class="mb-3">
-          <label for="loginEmail" class="form-label">Логин</label>
-          <input type="email" class="form-control" id="loginEmail" name="email" required />
+          <label for="loginUsername" class="form-label">Логин</label>
+          <input type="text" class="form-control" id="loginUsername" name="username" required />
         </div>
         <div class="mb-3">
           <label for="loginPassword" class="form-label">Пароль</label>
@@ -39,9 +40,10 @@
         <div class="d-grid mb-2">
           <button type="submit" class="btn btn-primary">Войти</button>
         </div>
-        <p class="text-center">Нет аккаунта? <a href="{% url 'register' %}">Зарегистрируйтесь</a></p>
+        <p class="text-center mb-0">Нет аккаунта? <a href="{% url 'register' %}" class="text-danger" style="color: #6f4e37;">Зарегистрируйтесь</a></p>
       </form>
     </div>
   </div>
 </body>
 </html>
+

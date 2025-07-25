@@ -2,9 +2,8 @@ from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-
 from .forms import ReviewForm
-from .models import Product, Order, OrderItem, Category
+from .models import Product, Order, OrderItem, Category, Review
 
 def index(request):
     featured_categories = Category.objects.filter(is_featured=True)[:3]
@@ -40,7 +39,7 @@ def product_list(request):
     elif sort == 'price_desc':
         products = products.order_by('-price')
     elif sort == 'popularity':
-        products = products.order_by('-popularity')
+        products = products.order_by('-purchase_count')
     elif sort == 'rating':
         products = sorted(products, key=lambda p: p.average_rating(), reverse=True)
     elif sort == 'newest':
@@ -108,6 +107,7 @@ def cart_view(request):
         subtotal = float(item['price']) * item['quantity']
         total += subtotal
         cart_items.append({
+            'id': item_id,
             'name': item['name'],
             'price': item['price'],
             'quantity': item['quantity'],
@@ -189,3 +189,30 @@ def order_success(request):
 
 def order_error(request):
     return render(request, 'bakery/order_error.html')
+
+
+@login_required
+def pay_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    if request.method == 'POST':
+        card_number = request.POST.get('card', '').strip()
+        cvv = request.POST.get('cvv', '').strip()
+        exp = request.POST.get('exp', '').strip()
+
+        print(f"[pay_order] POST data: card={card_number}, cvv={cvv}, exp={exp}")
+
+        if card_number == '0000 0000 0000 0000':
+            messages.error(request, "Оплата не прошла. Попробуйте другую карту.")
+            print("[pay_order] Payment failed due to test card")
+            return render(request, 'bakery/pay_order.html', {'order': order})
+
+        order.paid = True
+        order.status = 'Оплачен'
+        order.save()
+        messages.success(request, "Оплата прошла успешно!")
+        print("[pay_order] Payment success")
+        return redirect('order_success')
+
+    return render(request, 'bakery/pay_order.html', {'order': order})
+

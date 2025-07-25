@@ -23,7 +23,7 @@ def register(request):
         form = RegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            profile, created = Profile.objects.get_or_create(user=user)  # создаём профиль, если его нет
+            profile, created = Profile.objects.get_or_create(user=user)
             login(request, user)
             messages.success(request, "Регистрация прошла успешно!")
             return redirect('index')  # редирект на главную страницу
@@ -31,22 +31,19 @@ def register(request):
         form = RegistrationForm()
     return render(request, 'accounts/register.html', {'form': form})
 
-# Вход
 def login_view(request):
-    if request.method == 'POST':
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('index')
-            else:
-                messages.error(request, 'Неверный логин или пароль')
+    if request.method == "POST":
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('index')
+        else:
+            return render(request, 'accounts/login.html', {'error': 'Неверный логин или пароль'})
     else:
-        form = LoginForm()
-    return render(request, 'accounts/login.html', {'form': form})
+        return render(request, 'accounts/login.html')
 
 def logout_view(request):
     logout(request)
