@@ -23,11 +23,13 @@
     </div>
     <div class="col-md-6">
       <label for="sort" class="form-label">Сортировка:</label>
-      <select name="sort" id="sort" class="form-select" onchange="this.form.submit()">
-        <option value="name" {% if sort_option == "name" %}selected{% endif %}>По названию (А–Я)</option>
-        <option value="name_desc" {% if sort_option == "name_desc" %}selected{% endif %}>По названию (Я–А)</option>
-        <option value="price_asc" {% if sort_option == "price_asc" %}selected{% endif %}>По цене ↑</option>
-        <option value="price_desc" {% if sort_option == "price_desc" %}selected{% endif %}>По цене ↓</option>
+      <select name="sort" class="form-select" onchange="this.form.submit()">
+        <option value="">Сортировать по...</option>
+        <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>💰 Цена: по возрастанию</option>
+        <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>💸 Цена: по убыванию</option>
+        <option value="popularity" {% if sort == 'popularity' %}selected{% endif %}>🔥 Популярность</option>
+        <option value="rating" {% if sort == 'rating' %}selected{% endif %}>⭐️ Рейтинг</option>
+        <option value="newest" {% if sort == 'newest' %}selected{% endif %}>🆕 Новинки</option>
       </select>
     </div>
   </form>

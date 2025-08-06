@@ -32,7 +32,6 @@ def product_list(request):
     if search_query:
         products = products.filter(Q(name__icontains=search_query) | Q(description__icontains=search_query))
 
-    # Сортировка
     sort = request.GET.get('sort')
     if sort == 'price_asc':
         products = products.order_by('price')
@@ -139,7 +138,7 @@ def checkout_view(request):
                 full_name=full_name,
                 address=address,
                 phone=phone,
-                status='В процессе'
+                status='Ожидает оплаты'
             )
 
             total_price = 0
@@ -157,7 +156,7 @@ def checkout_view(request):
             order.save()
             request.session['cart'] = {}
 
-            return redirect('order_success')
+            return redirect('pay_order', order_id=order.id)
 
         except Exception as e:
             print("Ошибка оформления:", e)
