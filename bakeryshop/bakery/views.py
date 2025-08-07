@@ -215,3 +215,39 @@ def pay_order(request, order_id):
 
     return render(request, 'bakery/pay_order.html', {'order': order})
 
+
+def remove_from_cart(request, item_id):
+    cart = request.session.get('cart', {})
+    item_id = str(item_id)
+
+    if item_id in cart:
+        del cart[item_id]
+        request.session['cart'] = cart
+
+    return redirect('cart_view')
+
+def continue_payment(request, order_id):
+    order = get_object_or_404(Order, id=order_id, status='ожидает оплаты')
+    return redirect('payment_page', order_id=order.id)
+
+def cancel_unpaid_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+
+    if order.status in ['В процессе', 'Ожидает оплаты']:
+        order.status = 'Отменён'
+        order.save()
+        messages.success(request, "Неоплаченный заказ успешно отменён.")
+    else:
+        messages.error(request, "Этот заказ нельзя отменить.")
+
+    return redirect('orders_history')
+
+def request_refund(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    if order.status == 'Оплачен':
+        messages.success(request, "Запрос на возврат отправлен.")
+    else:
+        messages.error(request, "Возврат возможен только для оплаченных заказов.")
+    return redirect('orders_history')
+
+

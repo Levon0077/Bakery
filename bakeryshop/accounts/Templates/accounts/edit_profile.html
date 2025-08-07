@@ -1,42 +1,51 @@
 {% extends 'bakery/base.html' %}
+{% load form_tags %}
+
 
 {% block title %}Редактирование профиля{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-5 mb-5" style="max-width: 600px;">
     <h2 class="text-center mb-4">Редактирование профиля</h2>
 
     <div class="text-center mb-4">
         {% if request.user.profile.avatar %}
-            <img src="{{ request.user.profile.avatar.url }}" alt="Аватар" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
+            <img src="{{ request.user.profile.avatar.url }}" alt="Аватар пользователя" class="rounded-circle shadow" style="width: 120px; height: 120px; object-fit: cover;">
         {% else %}
-            <img src="https://via.placeholder.com/120" alt="Нет аватара" class="rounded-circle">
+            <img src="https://via.placeholder.com/120?text=Нет+аватара" alt="Нет аватара" class="rounded-circle shadow">
         {% endif %}
-        <p class="mt-2">
+        <div class="mt-2">
             <a href="{% url 'change_avatar' %}" class="btn btn-outline-secondary btn-sm">Изменить аватар</a>
-        </p>
+        </div>
     </div>
 
-    <form method="POST">
+    <form method="POST" novalidate>
         {% csrf_token %}
+
         <div class="mb-3">
-            {{ form.bio.label_tag }}
-            {{ form.bio }}
-            <div class="form-text text-danger">{{ form.bio.errors }}</div>
+            <label for="{{ form.bio.id_for_label }}" class="form-label">О себе</label>
+            {{ form.bio|add_class:"form-control" }}
+            {% if form.bio.errors %}
+                <div class="form-text text-danger">{{ form.bio.errors.0 }}</div>
+            {% endif %}
         </div>
+
         <div class="mb-3">
-            {{ form.birth_date.label_tag }}
-            {{ form.birth_date }}
-            <div class="form-text text-danger">{{ form.birth_date.errors }}</div>
+            <label for="{{ form.birth_date.id_for_label }}" class="form-label">Дата рождения</label>
+            {{ form.birth_date|add_class:"form-control" }}
+            {% if form.birth_date.errors %}
+                <div class="form-text text-danger">{{ form.birth_date.errors.0 }}</div>
+            {% endif %}
         </div>
-        <button type="submit" class="btn btn-success w-100">Сохранить изменения</button>
+
+        <button type="submit" class="btn btn-success w-100">💾 Сохранить изменения</button>
     </form>
 
-    <hr class="my-4">
+    <hr class="my-5">
 
     <div class="text-center">
-        <a href="{% url 'cart' %}" class="btn btn-outline-primary mb-2 w-100">Перейти в корзину</a>
-        <a href="{% url 'order_history' %}" class="btn btn-outline-primary w-100">История заказов</a>
+        <a href="{% url 'cart' %}" class="btn btn-outline-primary w-100 mb-2">🛒 Перейти в корзину</a>
+        <a href="{% url 'order_history' %}" class="btn btn-outline-primary w-100">📦 История заказов</a>
     </div>
 </div>
 {% endblock %}

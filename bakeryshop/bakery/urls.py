@@ -14,5 +14,10 @@ urlpatterns = [
     path('order/error/', views.order_error, name='order_error'),
     path('order/cancel/<int:order_id>/', views.cancel_order, name='cancel_order'),
     path('order/<int:order_id>/pay/', views.pay_order, name='pay_order'),
+    path('cart/remove/<int:item_id>/', views.remove_from_cart, name='remove_from_cart'),
+    path('orders/<int:order_id>/continue_payment/', views.continue_payment, name='continue_payment'),
+    path('orders/<int:order_id>/cancel_unpaid/', views.cancel_order, name='cancel_unpaid_order'),
+    path('orders/<int:order_id>/refund/', views.request_refund, name='request_refund'),
+
 ]
 

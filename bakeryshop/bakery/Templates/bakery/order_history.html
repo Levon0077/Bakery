@@ -1,89 +1,62 @@
 {% extends 'bakery/base.html' %}
+{% block title %}История заказов{% endblock %}
 
 {% block content %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 <div class="container mt-5">
-    <h2 class="mb-4">История заказов</h2>
+  <h2 class="mb-4">📜 История ваших заказов</h2>
 
-    <!-- Кнопка для раскрытия фильтра -->
-    <button class="btn btn-outline-primary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#filterForm">
-        Фильтр
-    </button>
+  <form method="get" class="mb-4 w-50">
+    <select name="status" class="form-select" onchange="this.form.submit()">
+      <option value="">Все статусы</option>
+      <option value="В процессе" {% if selected_status == 'В процессе' %}selected{% endif %}>В процессе</option>
+      <option value="Ожидает оплаты" {% if selected_status == 'Ожидает оплаты' %}selected{% endif %}>Ожидает оплаты</option>
+      <option value="Оплачен" {% if selected_status == 'Оплачен' %}selected{% endif %}>Оплачен</option>
+      <option value="Отменён" {% if selected_status == 'Отменён' %}selected{% endif %}>Отменён</option>
+    </select>
+  </form>
 
-    <!-- Форма фильтрации -->
-    <div class="collapse mb-4" id="filterForm">
-        <form method="get" class="row g-3 align-items-end">
-            <div class="col-md-2">
-                <label for="status" class="form-label">Статус:</label>
-                <select name="status" class="form-select" id="status">
-                    <option value="">Все</option>
-                    <option value="new" {% if request.GET.status == "new" %}selected{% endif %}>Новый</option>
-                    <option value="in_progress" {% if request.GET.status == 'in_progress' %}selected{% endif %}>В обработке</option>
-                    <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Завершён</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label for="date_from" class="form-label">Дата с:</label>
-                <input type="date" name="date_from" class="form-control" id="date_from" value="{{ request.GET.date_from }}">
-            </div>
-            <div class="col-md-2">
-                <label for="date_to" class="form-label">Дата по:</label>
-                <input type="date" name="date_to" class="form-control" id="date_to" value="{{ request.GET.date_to }}">
-            </div>
-            <div class="col-md-2">
-                <label for="min_price" class="form-label">Мин. сумма:</label>
-                <input type="number" name="min_price" class="form-control" id="min_price" value="{{ request.GET.min_price }}">
-            </div>
-            <div class="col-md-2">
-                <label for="max_price" class="form-label">Макс. сумма:</label>
-                <input type="number" name="max_price" class="form-control" id="max_price" value="{{ request.GET.max_price }}">
-            </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-primary w-100">Применить</button>
-            </div>
-        </form>
+  {% if orders %}
+    <div class="list-group">
+      {% for order in orders %}
+      <div class="list-group-item list-group-item-action flex-column align-items-start mb-3 shadow-sm rounded">
+        <div class="d-flex w-100 justify-content-between">
+          <h5>Заказ №{{ order.id }}</h5>
+          <small class="text-muted">{{ order.created_at|date:"d.m.Y H:i" }}</small>
+        </div>
+
+        <p><strong>Статус:</strong>
+          {% if order.status == 'Оплачен' %}
+            <span class="badge bg-success">{{ order.status }}</span>
+          {% elif order.status == 'В процессе' %}
+            <span class="badge bg-warning text-dark">{{ order.status }}</span>
+          {% elif order.status == 'Ожидает оплаты' %}
+            <span class="badge bg-secondary">{{ order.status }}</span>
+          {% else %}
+            <span class="badge bg-dark">{{ order.status }}</span>
+          {% endif %}
+        </p>
+
+        <p><strong>Сумма:</strong> {{ order.total_price }}֏</p>
+        <p><strong>Адрес доставки:</strong> {{ order.address }}</p>
+        <p><strong>Телефон:</strong> {{ order.phone }}</p>
+
+        <div>
+          {% if order.status == 'В процессе' or order.status == 'Ожидает оплаты' %}
+            <a href="{% url 'pay_order' order.id %}" class="btn btn-sm btn-success me-2">Продолжить оплату</a>
+            <a href="{% url 'cancel_unpaid_order' order.id %}" class="btn btn-sm btn-outline-danger me-2"
+               onclick="return confirm('Вы уверены, что хотите отменить этот заказ?')">Отменить</a>
+          {% elif order.status == 'Оплачен' %}
+            <a href="{% url 'request_refund' order.id %}" class="btn btn-sm btn-outline-warning me-2"
+               onclick="return confirm('Запросить возврат для этого заказа?')">Запросить возврат</a>
+          {% else %}
+            <button class="btn btn-sm btn-secondary" disabled>Действия недоступны</button>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
     </div>
-
-    {% if orders %}
-        {% for order in orders %}
-            <div class="card mb-4 shadow-sm">
-                <div class="card-header d-flex justify-content-between">
-                    <div>
-                        <strong>Заказ #{{ order.id }}</strong>
-                        <div class="text-muted small">Имя заказчика: {{ order.full_name }}</div>
-                    </div>
-                    <span class="badge bg-secondary align-self-center">{{ order.status }}</span>
-                </div>
-                <div class="card-body">
-                    <p><strong>Адрес:</strong> {{ order.address }}</p>
-                    <p><strong>Телефон:</strong> {{ order.phone }}</p>
-                    <p><strong>Оплачено:</strong> {{ order.paid|yesno:"Да,Нет" }}</p>
-                    <p><strong>Общая стоимость:</strong> <span class="fw-bold">{{ order.total_price }} ֏</span></p>
-
-                    <h5 class="mt-3">Товары:</h5>
-                    <ul class="list-group mb-3">
-                        {% for item in order.items.all %}
-                            <li class="list-group-item d-flex justify-content-between">
-                                {{ item.product.name }} × {{ item.quantity }}
-                                <span>{{ item.get_total_price }} ₽</span>
-                            </li>
-                        {% endfor %}
-                    </ul>
-
-                    <form action="{% url 'cancel_order' order.id %}" method="post" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger btn-sm"
-                                onclick="return confirm('Вы уверены, что хотите отменить заказ?');">
-                            Отменить заказ
-                        </button>
-                    </form>
-                </div>
-            </div>
-        {% endfor %}
-    {% else %}
-        <p class="text-muted">Заказы не найдены по выбранным критериям.</p>
-    {% endif %}
+  {% else %}
+    <p class="lead text-muted">Вы ещё не сделали ни одного заказа.</p>
+  {% endif %}
 </div>
 {% endblock %}
