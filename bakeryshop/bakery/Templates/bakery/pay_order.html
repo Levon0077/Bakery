@@ -8,20 +8,23 @@
 
     <p><strong>Сумма к оплате:</strong> <span class="text-success">{{ order.total_price }}֏</span></p>
 
-    <form method="post">
+    <form method="post" id="paymentForm">
       {% csrf_token %}
       <div class="mb-3">
         <label for="card" class="form-label">Номер карты</label>
-        <input type="text" id="card" name="card" class="form-control" placeholder="1234 5678 9012 3456" required>
+        <input type="text" id="card" name="card" maxlength="19"
+               class="form-control" placeholder="1234 5678 9012 3456" required>
       </div>
       <div class="row">
         <div class="col-md-6 mb-3">
           <label for="cvv" class="form-label">CVV</label>
-          <input type="text" id="cvv" name="cvv" class="form-control" placeholder="123" required>
+          <input type="text" id="cvv" name="cvv" maxlength="3"
+                 class="form-control" placeholder="123" required>
         </div>
         <div class="col-md-6 mb-3">
           <label for="exp" class="form-label">Срок действия</label>
-          <input type="text" id="exp" name="exp" class="form-control" placeholder="MM/YY" required>
+          <input type="text" id="exp" name="exp" maxlength="5"
+                 class="form-control" placeholder="MM/YY" required>
         </div>
       </div>
       <div class="d-flex justify-content-end">
@@ -30,4 +33,35 @@
     </form>
   </div>
 </div>
+
+<script>
+  document.getElementById('card').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      value = value.replace(/(.{4})/g, '$1 ').trim();
+      e.target.value = value;
+  });
+
+  document.getElementById('exp').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 2) {
+          value = value.slice(0, 2) + '/' + value.slice(2);
+      }
+      e.target.value = value;
+  });
+
+  document.getElementById('paymentForm').addEventListener('submit', function(e) {
+      const cvv = document.getElementById('cvv').value;
+      const exp = document.getElementById('exp').value;
+
+      if (!/^\d{3}$/.test(cvv)) {
+          alert("CVV должен состоять ровно из 3 цифр");
+          e.preventDefault();
+      }
+
+      if (!/^\d{2}\/\d{2}$/.test(exp)) {
+          alert("Срок действия должен быть в формате MM/YY");
+          e.preventDefault();
+      }
+  });
+</script>
 {% endblock %}

@@ -1,3 +1,4 @@
+import re
 from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
@@ -200,10 +201,21 @@ def pay_order(request, order_id):
         exp = request.POST.get('exp', '').strip()
 
         print(f"[pay_order] POST data: card={card_number}, cvv={cvv}, exp={exp}")
+        digits_only = re.sub(r"\D", "", card_number)
 
-        if card_number == '0000 0000 0000 0000':
+        if digits_only == '0000000000000000':
             messages.error(request, "Оплата не прошла. Попробуйте другую карту.")
             print("[pay_order] Payment failed due to test card")
+            return render(request, 'bakery/pay_order.html', {'order': order})
+
+        if not re.fullmatch(r"\d{3}", cvv):
+            messages.error(request, "Неверный CVV. Должно быть ровно 3 цифры.")
+            print("[pay_order] Payment failed due to invalid CVV")
+            return render(request, 'bakery/pay_order.html', {'order': order})
+
+        if not re.fullmatch(r"\d{2}/\d{2}", exp):
+            messages.error(request, "Неверный формат срока действия. Используйте формат MM/YY.")
+            print("[pay_order] Payment failed due to invalid expiration format")
             return render(request, 'bakery/pay_order.html', {'order': order})
 
         order.paid = True
@@ -248,6 +260,6 @@ def request_refund(request, order_id):
         messages.success(request, "Запрос на возврат отправлен.")
     else:
         messages.error(request, "Возврат возможен только для оплаченных заказов.")
-    return redirect('orders_history')
+    return redirect('order_history')
 
 
